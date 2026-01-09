@@ -49,8 +49,11 @@ void Game::render()
     window.clear(sf::Color::White);
 
     renderer.drawBoard();
-    renderer.drawPieces(board);
     renderer.fillSelectedTile(selectedTile);
+    renderer.fillLegalMoves(selectedLegalMoves.front());
+
+    renderer.drawPieces(board);
+    renderer.fillCapturablePieces(selectedLegalMoves.back());
 
     window.display();
 }
@@ -61,24 +64,43 @@ void Game::handleMouseClick(const sf::Vector2i &mousePos)
     if (!clickedTile)
         return;
 
-    if (clickedTile->isOccupied())
+    if (clickedTile->isOccupied() &&
+        (!selectedTile || (selectedTile && selectedTile->getPiece()->getColor() == clickedTile->getPiece()->getColor())))
     {
         selectedTile = clickedTile;
+
+        Piece *selectedPiece = selectedTile->getPiece();
+
+        if (selectedPiece)
+        {
+            selectedLegalMoves = selectedPiece->getLegalMoves(board);
+        }
+        else
+        {
+            selectedLegalMoves = {{}, {}};
+        }
+
         return;
     }
 
     if (!selectedTile)
         return;
 
-    Piece *selectedPiece = selectedTile->getPiece();
-    auto legalMoves = selectedPiece->getLegalMoves(board);
-
-    if (std::find(legalMoves.begin(), legalMoves.end(), clickedTile) != legalMoves.end())
+    if (std::find(selectedLegalMoves.front().begin(), selectedLegalMoves.front().end(), clickedTile) != selectedLegalMoves.front().end())
     {
-        clickedTile->setPiece(selectedPiece);
+        Piece *piece = selectedTile->getPiece();
+        clickedTile->setPiece(piece);
         selectedTile->setPiece(nullptr);
-        selectedPiece->setTile(clickedTile);
+        piece->setTile(clickedTile);
+    }
+    else if (std::find(selectedLegalMoves.back().begin(), selectedLegalMoves.back().end(), clickedTile) != selectedLegalMoves.back().end())
+    {
+        Piece *piece = selectedTile->getPiece();
+        clickedTile->setPiece(piece);
+        selectedTile->setPiece(nullptr);
+        piece->setTile(clickedTile);
     }
 
     selectedTile = nullptr;
+    selectedLegalMoves = selectedLegalMoves = {{}, {}};
 }

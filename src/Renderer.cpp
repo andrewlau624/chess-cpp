@@ -62,7 +62,7 @@ void Renderer::drawPieces(Board &board)
     }
 }
 
-void Renderer::fillSelectedTile(Tile *tile)
+void Renderer::fillSelectedTile(Tile *tile) const
 {
     if (!tile)
     {
@@ -74,8 +74,57 @@ void Renderer::fillSelectedTile(Tile *tile)
     sf::RectangleShape rectangle;
     rectangle.setSize(sf::Vector2f(tileSize, tileSize));
     rectangle.setPosition({tileSize * tile->getCol(), tileSize * tile->getRow()});
-    rectangle.setFillColor(sf::Color(255, 255, 255, 128));
+    rectangle.setFillColor(sf::Color(225, 225, 225, 100));
     window.draw(rectangle);
+}
+
+void Renderer::fillLegalMoves(std::vector<Tile *> &legalMoves) const
+{
+    if (legalMoves.empty())
+        return;
+
+    float tileSize = boardSize / Board::SIZE;
+
+    for (Tile *tile : legalMoves)
+    {
+        if (!tile)
+            continue;
+
+        sf::CircleShape dot(tileSize / 6.0f);
+        dot.setFillColor(sf::Color(10, 10, 10, 50));
+
+        float x = tile->getCol() * tileSize + tileSize / 2.0f - dot.getRadius();
+        float y = tile->getRow() * tileSize + tileSize / 2.0f - dot.getRadius();
+        dot.setPosition({x, y});
+
+        window.draw(dot);
+    }
+}
+
+void Renderer::fillCapturablePieces(std::vector<Tile *> &capturablePieces) const
+{
+    if (capturablePieces.empty())
+        return;
+
+    float tileSize = boardSize / Board::SIZE;
+
+    for (Tile *tile : capturablePieces)
+    {
+        if (!tile)
+            continue;
+
+        sf::CircleShape circle(tileSize / 2.5f);
+        circle.setOrigin({circle.getRadius(), circle.getRadius()});
+        float x = tile->getCol() * tileSize + tileSize / 2.0f;
+        float y = tile->getRow() * tileSize + tileSize / 2.0f;
+        circle.setPosition({x, y});
+
+        circle.setFillColor(sf::Color::Transparent);
+        circle.setOutlineColor(sf::Color(10, 10, 10, 50));
+        circle.setOutlineThickness(10.0f);
+
+        window.draw(circle);
+    }
 }
 
 void Renderer::loadAssets()

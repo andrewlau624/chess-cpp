@@ -23,6 +23,7 @@ private:
 private:
     Piece::Color player;
     Tile* selectedTile;
+    std::vector<std::vector<Tile*>> selectedLegalMoves{{}, {}};
 
 private:
     void proccessEvents();

@@ -36,9 +36,11 @@ std::vector<std::vector<Tile *>> Piece::getLegalMoves(Board &board) const
         if (!t)
             return false;
 
-        path.push_back(t);
-
-        if (t->isOccupied())
+        if (!t->isOccupied())
+        {
+            path.push_back(t);
+        }
+        else
         {
             if (t->getPiece()->getColor() != color)
             {
@@ -60,7 +62,7 @@ std::vector<std::vector<Tile *>> Piece::getLegalMoves(Board &board) const
 
         std::vector<Tile *> path;
         std::vector<Tile *> captureVec;
-        
+
         Tile *one = board.getTile(r + dir, c);
         if (one && !one->isOccupied())
         {
@@ -79,7 +81,8 @@ std::vector<std::vector<Tile *>> Piece::getLegalMoves(Board &board) const
         for (int dc : {-1, 1})
         {
             Tile *diag = board.getTile(r + dir, c + dc);
-            tryAdd(r + dir, c + dc, path, captureVec);
+            if (diag && diag->isOccupied() && diag->getPiece()->getColor() != color)
+                captureVec.push_back(diag);
         }
 
         legalMoves.push_back(path);
@@ -104,6 +107,10 @@ std::vector<std::vector<Tile *>> Piece::getLegalMoves(Board &board) const
                     break;
             }
         }
+
+        legalMoves.push_back(path);
+        legalMoves.push_back(captureVec);
+
         break;
     }
     case Piece::Type::Bishop:
@@ -115,53 +122,73 @@ std::vector<std::vector<Tile *>> Piece::getLegalMoves(Board &board) const
         std::vector<Tile *> path;
         std::vector<Tile *> captureVec;
 
-
         for (auto &d : dirs)
         {
             for (int i = 1;; i++)
             {
-                if (!tryAdd(tile->getRow() + d[0] * i, tile->getCol() + d[1] * i))
+                if (!tryAdd(r + d[0] * i, c + d[1] * i, path, captureVec))
                     break;
             }
         }
+
+        legalMoves.push_back(path);
+        legalMoves.push_back(captureVec);
+
         break;
     }
     case Piece::Type::Queen:
     {
         const int dirs[8][2] = {
             {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        int r = tile->getRow();
+        int c = tile->getCol();
+
+        std::vector<Tile *> path;
+        std::vector<Tile *> captureVec;
+
         for (auto &d : dirs)
         {
             for (int i = 1;; i++)
             {
-                if (!tryAdd(tile->getRow() + d[0] * i, tile->getCol() + d[1] * i))
+                if (!tryAdd(r + d[0] * i, c + d[1] * i, path, captureVec))
                     break;
             }
         }
-        break;
+
+        legalMoves.push_back(path);
+        legalMoves.push_back(captureVec);
+
         break;
     }
     case Piece::Type::Knight:
     {
         const int jumps[8][2] = {
             {2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
+        int r = tile->getRow();
+        int c = tile->getCol();
+
+        std::vector<Tile *> path;
+        std::vector<Tile *> captureVec;
 
         for (auto &j : jumps)
         {
-            Tile *t = board.getTile(tile->getRow() + j[0], tile->getCol() + j[1]);
-            if (!t)
+            if (!tryAdd(r + j[0], c + j[1], path, captureVec))
                 continue;
-
-            if (!t->isOccupied() ||
-                t->getPiece()->getColor() != color)
-            {
-                legalMoves.push_back(t);
-            }
         }
+
+        legalMoves.push_back(path);
+        legalMoves.push_back(captureVec);
+
         break;
     }
     case Piece::Type::King:
     {
+        int r = tile->getRow();
+        int c = tile->getCol();
+
+        std::vector<Tile *> path;
+        std::vector<Tile *> captureVec;
+
         for (int dr = -1; dr <= 1; dr++)
         {
             for (int dc = -1; dc <= 1; dc++)
@@ -169,17 +196,13 @@ std::vector<std::vector<Tile *>> Piece::getLegalMoves(Board &board) const
                 if (dr == 0 && dc == 0)
                     continue;
 
-                Tile *t = board.getTile(tile->getRow() + dr, tile->getCol() + dc);
-                if (!t)
-                    continue;
-
-                if (!t->isOccupied() ||
-                    t->getPiece()->getColor() != color)
-                {
-                    legalMoves.push_back(t);
-                }
+                tryAdd(r + dr, c + dc, path, captureVec);
             }
         }
+
+        legalMoves.push_back(path);
+        legalMoves.push_back(captureVec);
+
         break;
     }
     default:

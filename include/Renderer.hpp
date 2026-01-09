@@ -28,5 +28,7 @@ public:
 
 public:
     Tile* getTileFromCoord(const sf::Vector2i& pos, Board& board) const;
-    void fillSelectedTile(Tile* tile);
+    void fillSelectedTile(Tile* tile) const;
+    void fillLegalMoves(std::vector<Tile *>& legalMoves) const;
+    void fillCapturablePieces(std::vector<Tile *>& capturablePieces) const;
 };
