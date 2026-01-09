@@ -1,6 +1,8 @@
 #pragma once
-#include "Board.hpp"
 #include <SFML/Graphics.hpp>
+
+#include "Board.hpp"
+#include "Piece.hpp"
 #include "Renderer.hpp"
 
 class Game
@@ -10,8 +12,17 @@ public:
     void run();
 
 private:
+    unsigned int windowWidth;
+    unsigned int windowHeight;
+    sf::RenderWindow window;
+
+private:
     Board board;
     Renderer renderer;
+
+private:
+    Piece::Color player;
+    Tile* selectedTile;
 
 private:
     void proccessEvents();
@@ -19,7 +30,5 @@ private:
     void render();
 
 private:
-    unsigned int windowWidth;
-    unsigned int windowHeight;
-    sf::RenderWindow window;
+    void handleMouseClick(const sf::Vector2i& mousePos);
 };

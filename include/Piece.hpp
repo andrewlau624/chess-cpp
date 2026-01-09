@@ -1,4 +1,8 @@
 #pragma once
+#include <vector>
+
+#include "Board.hpp"
+
 class Tile;
 
 class Piece
@@ -26,6 +30,9 @@ public:
 
     void setTile(Tile* t);
     Tile* getTile() const;
+
+    bool canMoveTo(Tile* tile) const;
+    std::vector<std::vector<Tile*>> getLegalMoves(Board& board) const;
 
 private:
     Type type;
