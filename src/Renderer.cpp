@@ -15,7 +15,7 @@ void Renderer::drawBoard()
     {
         for (int c = 0; c < Board::SIZE; ++c)
         {
-            std::optional<sf::Sprite> tileSprite = sf::Sprite((r + c) % 2 == 0 ? whiteTileTexture : blackTileTexture);
+            std::optional<sf::Sprite> tileSprite = sf::Sprite((r + c) % 2 == (flipped ? 1 : 0) ? whiteTileTexture : blackTileTexture);
 
             float scale = tileSize / tileSprite->getTexture().getSize().x;
             tileSprite->setScale({scale, scale});
@@ -37,7 +37,7 @@ void Renderer::drawPieces(Board &board)
     {
         for (int c = 0; c < Board::SIZE; ++c)
         {
-            Tile *tile = board.getTile(r, c);
+            Tile *tile = board.getTile(flipped ? 7 - r : r, c);
 
             if (!tile->isOccupied() || tile == board.enPassantTile)
             {
@@ -73,7 +73,7 @@ void Renderer::fillSelectedTile(Tile *tile) const
 
     sf::RectangleShape rectangle;
     rectangle.setSize(sf::Vector2f(tileSize, tileSize));
-    rectangle.setPosition({tileSize * tile->getCol(), tileSize * tile->getRow()});
+    rectangle.setPosition({tileSize * tile->getCol(), tileSize * (flipped ? 7 - tile->getRow() : tile->getRow())});
     rectangle.setFillColor(sf::Color(225, 225, 225, 100));
     window.draw(rectangle);
 }
@@ -94,7 +94,7 @@ void Renderer::fillLegalMoves(std::vector<Tile *> &legalMoves) const
         dot.setFillColor(sf::Color(10, 10, 10, 50));
 
         float x = tile->getCol() * tileSize + tileSize / 2.0f - dot.getRadius();
-        float y = tile->getRow() * tileSize + tileSize / 2.0f - dot.getRadius();
+        float y = (flipped ? 7 - tile->getRow() : tile->getRow()) * tileSize + tileSize / 2.0f - dot.getRadius();
         dot.setPosition({x, y});
 
         window.draw(dot);
@@ -116,7 +116,7 @@ void Renderer::fillCapturablePieces(std::vector<Tile *> &capturablePieces) const
         sf::CircleShape circle(tileSize / 2.5f);
         circle.setOrigin({circle.getRadius(), circle.getRadius()});
         float x = tile->getCol() * tileSize + tileSize / 2.0f;
-        float y = tile->getRow() * tileSize + tileSize / 2.0f;
+        float y = (flipped ? 7 - tile->getRow() : tile->getRow()) * tileSize + tileSize / 2.0f;
         circle.setPosition({x, y});
 
         circle.setFillColor(sf::Color::Transparent);
@@ -228,5 +228,5 @@ Tile *Renderer::getTileFromCoord(const sf::Vector2i &pos, Board &board) const
     int r = pos.y / tileSize;
     int c = pos.x / tileSize;
 
-    return board.getTile(r, c);
+    return board.getTile(flipped ? 7 - r : r, c);
 }

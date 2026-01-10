@@ -26,6 +26,8 @@ public:
     void drawBoard();
     void drawPieces(Board& board);
 
+    bool flipped = false;
+
 public:
     Tile* getTileFromCoord(const sf::Vector2i& pos, Board& board) const;
     void fillSelectedTile(Tile* tile) const;

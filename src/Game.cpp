@@ -37,6 +37,13 @@ void Game::proccessEvents()
             sf::Vector2i pos = sf::Mouse::getPosition(window);
             handleMouseClick(pos);
         }
+        else if (event->is<sf::Event::KeyPressed>())
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Scancode::R))
+            {
+                renderer.flipped = !renderer.flipped;
+            }
+        }
     }
 }
 
@@ -163,17 +170,20 @@ void Game::executeMove(Tile *from, Tile *to)
         int dc = std::abs(from->getCol() - c);
         if (dc == 2)
         {
-            if (c == 2) {
-                Tile* rook = board.getTile(r, 0);
-                Tile* newRook = board.getTile(r, 3);
+            if (c == 2)
+            {
+                Tile *rook = board.getTile(r, 0);
+                Tile *newRook = board.getTile(r, 3);
 
                 newRook->setPiece(rook->getPiece());
                 newRook->getPiece()->setTile(newRook);
 
                 rook->setPiece(nullptr);
-            } else if (c == 6) {
-                Tile* rook = board.getTile(r, 7);
-                Tile* newRook = board.getTile(r, 5);
+            }
+            else if (c == 6)
+            {
+                Tile *rook = board.getTile(r, 7);
+                Tile *newRook = board.getTile(r, 5);
 
                 newRook->setPiece(rook->getPiece());
                 newRook->getPiece()->setTile(newRook);
