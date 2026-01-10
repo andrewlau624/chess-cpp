@@ -39,7 +39,7 @@ void Renderer::drawPieces(Board &board)
         {
             Tile *tile = board.getTile(r, c);
 
-            if (!tile->isOccupied())
+            if (!tile->isOccupied() || tile == board.enPassantTile)
             {
                 continue;
             }

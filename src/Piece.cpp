@@ -36,7 +36,7 @@ std::vector<std::vector<Tile *>> Piece::getLegalMoves(Board &board) const
         if (!t)
             return false;
 
-        if (!t->isOccupied())
+        if (!t->isOccupied() || t == board.enPassantTile)
         {
             path.push_back(t);
         }
@@ -197,6 +197,51 @@ std::vector<std::vector<Tile *>> Piece::getLegalMoves(Board &board) const
                     continue;
 
                 tryAdd(r + dr, c + dc, path, captureVec);
+            }
+        }
+
+        if (color == Color::White)
+        {
+            if (board.whiteCastleKingSide)
+            {
+                if (!board.getTile(7, 5)->isOccupied() &&
+                    !board.getTile(7, 6)->isOccupied() &&
+                    board.getTile(7, 7)->getPiece()->getColor() == color)
+                {
+                    path.push_back(board.getTile(7, 6));
+                }
+            }
+            if (board.whiteCastleQueenSide)
+            {
+                if (!board.getTile(7, 1)->isOccupied() &&
+                    !board.getTile(7, 2)->isOccupied() &&
+                    !board.getTile(7, 3)->isOccupied() &&
+                    board.getTile(7, 0)->getPiece()->getColor() == color)
+                {
+                    path.push_back(board.getTile(7, 2));
+                }
+            }
+        }
+        else
+        {
+            if (board.blackCastleKingSide)
+            {
+                if (!board.getTile(0, 5)->isOccupied() &&
+                    !board.getTile(0, 6)->isOccupied() &&
+                    board.getTile(0, 7)->getPiece()->getColor() == color)
+                {
+                    path.push_back(board.getTile(0, 6));
+                }
+            }
+            if (board.blackCastleQueenSide)
+            {
+                if (!board.getTile(0, 1)->isOccupied() &&
+                    !board.getTile(0, 2)->isOccupied() &&
+                    !board.getTile(0, 3)->isOccupied() &&
+                    board.getTile(0, 0)->getPiece()->getColor() == color)
+                {
+                    path.push_back(board.getTile(0, 2));
+                }
             }
         }
 

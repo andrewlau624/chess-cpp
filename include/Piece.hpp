@@ -38,4 +38,6 @@ private:
     Type type;
     Color color;
     Tile* tile;
+
+    
 };

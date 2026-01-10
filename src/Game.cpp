@@ -64,11 +64,10 @@ void Game::handleMouseClick(const sf::Vector2i &mousePos)
     if (!clickedTile)
         return;
 
-    if (clickedTile->isOccupied() &&
+    if (clickedTile->isOccupied() && clickedTile != board.enPassantTile &&
         (!selectedTile || (selectedTile && selectedTile->getPiece()->getColor() == clickedTile->getPiece()->getColor())))
     {
         selectedTile = clickedTile;
-
         Piece *selectedPiece = selectedTile->getPiece();
 
         if (selectedPiece)
@@ -79,28 +78,112 @@ void Game::handleMouseClick(const sf::Vector2i &mousePos)
         {
             selectedLegalMoves = {{}, {}};
         }
-
         return;
     }
 
     if (!selectedTile)
         return;
 
-    if (std::find(selectedLegalMoves.front().begin(), selectedLegalMoves.front().end(), clickedTile) != selectedLegalMoves.front().end())
+    for (auto &moves : selectedLegalMoves)
     {
-        Piece *piece = selectedTile->getPiece();
-        clickedTile->setPiece(piece);
-        selectedTile->setPiece(nullptr);
-        piece->setTile(clickedTile);
-    }
-    else if (std::find(selectedLegalMoves.back().begin(), selectedLegalMoves.back().end(), clickedTile) != selectedLegalMoves.back().end())
-    {
-        Piece *piece = selectedTile->getPiece();
-        clickedTile->setPiece(piece);
-        selectedTile->setPiece(nullptr);
-        piece->setTile(clickedTile);
+        bool isNormalMove = std::find(moves.begin(), moves.end(), clickedTile) != moves.end();
+
+        if (!isNormalMove)
+            continue;
+
+        executeMove(selectedTile, clickedTile);
+        break;
     }
 
     selectedTile = nullptr;
-    selectedLegalMoves = selectedLegalMoves = {{}, {}};
+    selectedLegalMoves = {{}, {}};
+}
+
+void Game::executeMove(Tile *from, Tile *to)
+{
+    if (!from || !to)
+        return;
+
+    Piece *piece = from->getPiece();
+    if (!piece)
+        return;
+
+    if (board.enPassantTile)
+    {
+        if (to == board.enPassantTile && piece->getType() == Piece::Type::Pawn)
+            to->getPiece()->getTile()->setPiece(nullptr);
+        board.enPassantTile->setPiece(nullptr);
+    }
+
+    board.enPassantTile = nullptr;
+    if (piece->getType() == Piece::Type::Pawn)
+    {
+        int dr = std::abs(from->getRow() - to->getRow());
+        if (dr == 2)
+        {
+            int midRow = (from->getRow() + to->getRow()) / 2;
+            Tile *enPassantTile = board.getTile(midRow, from->getCol());
+            board.enPassantTile = enPassantTile;
+            enPassantTile->setPiece(from->getPiece());
+        }
+    }
+
+    if (piece->getType() == Piece::Type::Rook)
+    {
+        if (piece->getColor() == Piece::Color::White)
+        {
+            if (from->getRow() == 7 && from->getCol() == 0)
+                board.whiteCastleQueenSide = false;
+            else if (from->getRow() == 7 && from->getCol() == 7)
+                board.whiteCastleKingSide = false;
+        }
+        else
+        {
+            if (from->getRow() == 0 && from->getCol() == 0)
+                board.blackCastleQueenSide = false;
+            else if (from->getRow() == 0 && from->getCol() == 7)
+                board.blackCastleKingSide = false;
+        }
+    }
+    else if (piece->getType() == Piece::Type::King)
+    {
+        if (piece->getColor() == Piece::Color::White)
+        {
+            board.whiteCastleQueenSide = false;
+            board.whiteCastleKingSide = false;
+        }
+        else
+        {
+            board.blackCastleQueenSide = false;
+            board.blackCastleKingSide = false;
+        }
+
+        int c = to->getCol();
+        int r = to->getRow();
+        int dc = std::abs(from->getCol() - c);
+        if (dc == 2)
+        {
+            if (c == 2) {
+                Tile* rook = board.getTile(r, 0);
+                Tile* newRook = board.getTile(r, 3);
+
+                newRook->setPiece(rook->getPiece());
+                newRook->getPiece()->setTile(newRook);
+
+                rook->setPiece(nullptr);
+            } else if (c == 6) {
+                Tile* rook = board.getTile(r, 7);
+                Tile* newRook = board.getTile(r, 5);
+
+                newRook->setPiece(rook->getPiece());
+                newRook->getPiece()->setTile(newRook);
+
+                rook->setPiece(nullptr);
+            }
+        }
+    }
+
+    to->setPiece(piece);
+    from->setPiece(nullptr);
+    piece->setTile(to);
 }

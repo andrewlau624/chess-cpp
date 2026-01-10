@@ -32,4 +32,5 @@ private:
 
 private:
     void handleMouseClick(const sf::Vector2i& mousePos);
+    void executeMove(Tile* from, Tile* to);
 };
